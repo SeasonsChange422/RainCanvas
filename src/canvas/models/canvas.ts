@@ -19,12 +19,12 @@ export class Canvas {
     private areaSelectState
     private normalState
     public shapes:Shape[] = []
-    public selectArea:SelectArea
+    public selectArea:SelectArea | null
     public grid:Grid
     public selectionManager:SelectionManager
     public commandManager:CommandManager
-    private throttledMouseHandler:Function
-    private throttledKeyHandler:Function
+    private throttledMouseHandler:Function = ()=>{}
+    private throttledKeyHandler:Function = ()=>{}
 
     constructor(options:any) {
         if (options.el && typeof options.el === 'string') {
@@ -50,6 +50,7 @@ export class Canvas {
         this.areaSelectState = new AreaSelectState(this)
         this.normalState = new NormalState(this);
         this.state = this.normalState
+        this.selectArea = null
         this.commandManager = new CommandManager()
         this.selectionManager = new SelectionManager(this.commandManager)
 
@@ -96,12 +97,12 @@ export class Canvas {
         this.throttledMouseHandler = throttle(this.handleEvent.bind(this), 8);
         this.throttledKeyHandler = throttle(this.handleKeyEvent.bind(this), 32);
 
-        this.el.addEventListener('mousewheel',this.throttledMouseHandler)
+        this.el.addEventListener('mousewheel',this.throttledMouseHandler(this))
         this.el.addEventListener('mousedown', this.handleEvent.bind(this));
-        this.el.addEventListener('mousemove', this.throttledMouseHandler);
+        this.el.addEventListener('mousemove', this.throttledMouseHandler(this));
         this.el.addEventListener('mouseup', this.handleEvent.bind(this));
-        document.addEventListener('keydown', this.throttledKeyHandler);
-        document.addEventListener('keyup', this.throttledKeyHandler);
+        document.addEventListener('keydown', this.throttledKeyHandler(this));
+        document.addEventListener('keyup', this.throttledKeyHandler(this));
         this.el.oncontextmenu=()=>false
     }
     findShapeAt(pos:RelativePoint) {

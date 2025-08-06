@@ -1,7 +1,6 @@
 import {Shape} from "./shape";
 import {ShapeOptions, ShapePoint} from "../types/shape";
 import {OriginPoint, RelativePoint} from "../types/common";
-import {SELECT_AREA_COLOR} from "../constpool/shape";
 
 export class SelectArea extends Shape{
     private startPoint:ShapePoint

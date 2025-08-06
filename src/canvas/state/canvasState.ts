@@ -140,8 +140,8 @@ export class MultiSelectState extends CanvasState {
 
 // shift区域选择
 export class AreaSelectState extends CanvasState {
-    private startPoint:RelativePoint
-    private endPoint:RelativePoint
+    private startPoint:RelativePoint = {x:0,y:0}
+    private endPoint:RelativePoint = {x:0,y:0}
     handleMousedown(e:any) {
         this.startPoint = {
             x:e.offsetX,
