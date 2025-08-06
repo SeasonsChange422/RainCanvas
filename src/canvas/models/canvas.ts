@@ -1,8 +1,9 @@
 import {OriginPoint, RelativePoint} from "../types/common";
 import {Grid} from "./grid";
 import {Shape} from "./shape";
-import {AreaSelectState, MultiSelectState, NormalState} from "../state/canvasState";
+import {AreaSelectState, CanvasState, MultiSelectState, NormalState} from "../state/canvasState";
 import {SelectionManager} from "../manager/selectionManager";
+import {CommandManager} from "../manager/commandManager";
 
 export class Canvas {
     public el
@@ -11,10 +12,11 @@ export class Canvas {
     public height = 150
     public scale = 1
     public originPoint:OriginPoint = {x:20,y:20}
-    public state
+    public state:CanvasState
     public shapes:Shape[] = []
     public grid:Grid
     public selectionManager:SelectionManager
+    public commandManager:CommandManager
     constructor(options:any) {
         if (options.el && typeof options.el === 'string') {
             this.el = document.querySelector(options.el);
@@ -36,16 +38,25 @@ export class Canvas {
         this.ctx._height = this.height
         this.ctx._width = this.width
         this.state = new NormalState(this);
-        this.selectionManager = new SelectionManager()
+        this.commandManager = new CommandManager()
+        this.selectionManager = new SelectionManager(this.commandManager)
+
         this.resize(this.height, this.width)
-        let shape1 = new Shape(this.ctx,[{x:33,y:33},{x:77,y:33},{x:77,y:77},{x:33,y:77}],{
+        this.addShape(new Shape(this.ctx,[{x:330,y:330},{x:770,y:330},{x:770,y:770},{x:330,y:770}],{
             isClose:true,isFill:true
-        })
-        let shape2 = new Shape(this.ctx,[{x:330,y:330},{x:770,y:330},{x:770,y:770},{x:330,y:770}],{
+        }))
+        this.addShape(new Shape(this.ctx,[{x:330,y:330},{x:770,y:330},{x:770,y:770},{x:330,y:770}],{
             isClose:true,isFill:true
-        })
-        this.addShape(shape1)
-        this.addShape(shape2)
+        }))
+        this.addShape(new Shape(this.ctx,[{x:330,y:330},{x:770,y:330},{x:770,y:770},{x:330,y:770}],{
+            isClose:true,isFill:true
+        }))
+        this.addShape(new Shape(this.ctx,[{x:330,y:330},{x:770,y:330},{x:770,y:770},{x:330,y:770}],{
+            isClose:true,isFill:true
+        }))
+        this.addShape(new Shape(this.ctx,[{x:330,y:330},{x:221,y:330},{x:443,y:770},{x:445,y:123}],{
+            isClose:false,isFill:false
+        }))
         this.draw()
         this.registerEvent()
     }
@@ -55,13 +66,15 @@ export class Canvas {
         this.state[handler]?.(e);
     }
     handleKeyEvent(e:any) {
-        if (e.ctrlKey || e.metaKey) {
+        const handler = `handle${e.type.charAt(0).toUpperCase() + e.type.slice(1)}`;
+        if (e.ctrlKey || e.metaKey) { //window || mac
             this.state = new MultiSelectState(this);
         } else if (e.shiftKey) {
             this.state = new AreaSelectState(this);
         } else {
             this.state = new NormalState(this);
         }
+        this.state[handler]?.(e)
     }
     registerEvent(){
         this.el.addEventListener('mousewheel',this.handleEvent.bind(this))
@@ -70,6 +83,7 @@ export class Canvas {
         this.el.addEventListener('mouseup', this.handleEvent.bind(this));
         document.addEventListener('keydown', this.handleKeyEvent.bind(this));
         document.addEventListener('keyup', this.handleKeyEvent.bind(this));
+        this.el.oncontextmenu=()=>false
     }
     findShapeAt(pos:RelativePoint) {
         for (let i = this.shapes.length - 1; i >= 0; i--) {

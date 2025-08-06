@@ -13,6 +13,8 @@ export abstract class CanvasState {
     abstract handleMouseup(e:any):void;
     abstract handleMousemove(e:any):void;
     abstract handleMousewheel(e:any):void;
+    abstract handleKeydown(e:any):void;
+    abstract handleKeyup(e:any):void;
 }
 
 // 单击
@@ -24,18 +26,27 @@ export class NormalState extends CanvasState{
         }
         let shape:Shape |null = this.canvas.findShapeAt(pos)
         if(shape){ // 点击元素
-            if(this.canvas.selectionManager.singleShape()){ // 单选的情况下，点击元素会重新选择
-                this.canvas.selectionManager.singleSelect(shape)
+            switch(e.button){
+                case 0: {
+                    if(this.canvas.selectionManager.singleShape()){ // 单选的情况下，点击元素会重新选择
+                        this.canvas.selectionManager.singleSelect(shape)
+                    }
+                    if(!this.canvas.selectionManager.has(shape)){
+                        this.canvas.selectionManager.singleSelect(shape) // 多选的情况下，点击其他元素会重新选择
+                    }
+                    this.canvas.state = new DragState(this.canvas,pos)
+                    break
+                }
+                case 2: {
+                    this.canvas.selectionManager.singleSelect(shape)
+                }
             }
-            this.canvas.state = new DragState(this.canvas,pos)
         } else {
             if(e.button === 0){
                 this.canvas.selectionManager.clear()
                 this.canvas.state = new PanState(this.canvas,pos)
-
             }
         }
-
     }
 
     handleMousemove(e:any) {
@@ -43,10 +54,17 @@ export class NormalState extends CanvasState{
     }
 
     handleMouseup(e:any) {
+
     }
 
     handleMousewheel(e:any) {
         scale(this.canvas,e)
+    }
+
+    handleKeydown(e: any): void {
+    }
+
+    handleKeyup(e: any): void {
     }
 }
 
@@ -71,6 +89,18 @@ export class MultiSelectState extends CanvasState {
     handleMousewheel(e:any) {
         scale(this.canvas,e)
     }
+
+    handleKeydown(e: any): void {
+        switch (e.key) {
+            case 'z': {
+                this.canvas.commandManager.undo()
+                break;
+            }
+        }
+    }
+
+    handleKeyup(e: any): void {
+    }
 }
 
 // shift区域选择
@@ -86,6 +116,12 @@ export class AreaSelectState extends CanvasState {
 
     handleMousewheel(e:any) {
         scale(this.canvas,e)
+    }
+
+    handleKeydown(e: any): void {
+    }
+
+    handleKeyup(e: any): void {
     }
 }
 
@@ -115,6 +151,12 @@ export class PanState extends CanvasState{
     handleMousewheel(e:any) {
         scale(this.canvas,e)
     }
+
+    handleKeydown(e: any): void {
+    }
+
+    handleKeyup(e: any): void {
+    }
 }
 export class DragState extends CanvasState{
 
@@ -135,11 +177,18 @@ export class DragState extends CanvasState{
     }
 
     handleMouseup(e:any) {
+        this.canvas.selectionManager.stopMove()
         this.canvas.state = new NormalState(this.canvas)
     }
 
     handleMousewheel(e:any) {
         scale(this.canvas,e)
+    }
+
+    handleKeydown(e: any): void {
+    }
+
+    handleKeyup(e: any): void {
     }
 }
 function scale(canvas:Canvas,e:any){
