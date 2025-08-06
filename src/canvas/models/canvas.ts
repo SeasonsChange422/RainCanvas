@@ -54,7 +54,7 @@ export class Canvas {
         this.addShape(new Shape(this.ctx,[{x:330,y:330},{x:770,y:330},{x:770,y:770},{x:330,y:770}],{
             isClose:true,isFill:true
         }))
-        this.addShape(new Shape(this.ctx,[{x:330,y:330},{x:221,y:330},{x:443,y:770},{x:445,y:123}],{
+        this.addShape(new Shape(this.ctx,[{x:330,y:330},{x:221,y:330},{x:246,y:770},{x:445,y:123}],{
             isClose:false,isFill:false
         }))
         this.addShape(new Shape(this.ctx,[{x:100,y:100},{x:200,y:100},{x:200,y:0}],{
@@ -77,6 +77,7 @@ export class Canvas {
         } else {
             this.state = new NormalState(this);
         }
+        // @ts-ignore
         this.state[handler]?.(e)
     }
     registerEvent(){

@@ -43,7 +43,7 @@ export class SelectionManager{
         return this.selectedShape.has(shape)
     }
     move(offsetX:number,offsetY:number){
-        let commands = []
+        let commands:Command[] = []
         this.selectedShape.forEach((shape)=>{
             commands.push(new MoveCommand(shape,offsetX,offsetY))
         })
@@ -52,7 +52,7 @@ export class SelectionManager{
         this.totalOffsetY+=offsetY // 计算总移动量，在stopMove时才将命令推入执行历史
     }
     stopMove(){
-        let commands = []
+        let commands:Command[] = []
         this.selectedShape.forEach((shape)=>{
             commands.push(new MoveCommand(shape,this.totalOffsetX,this.totalOffsetY))
         })
