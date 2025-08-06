@@ -22,10 +22,10 @@ export class Shape extends CanvasElement{
     isPointInside(testPoint: RelativePoint, originPoint: OriginPoint, scale: number): boolean {
         if (!this.isClose){
             let rectBorder:RectBorder = getRectBorder(this.points)
-            if(rectBorder.minX<=testPoint.x
-                &&rectBorder.maxX>=testPoint.x
-                &&rectBorder.minY<=testPoint.y
-                &&rectBorder.maxX>=testPoint.y){
+            if(originPoint.x + rectBorder.minX*scale<=testPoint.x
+                &&originPoint.x + rectBorder.maxX*scale>=testPoint.x
+                &&originPoint.y + rectBorder.minY*scale<=testPoint.y
+                &&originPoint.y + rectBorder.maxX*scale>=testPoint.y){
                 return true
             }
             return false
