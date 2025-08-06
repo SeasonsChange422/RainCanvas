@@ -19,6 +19,8 @@ export abstract class CanvasState {
 
 // 单击
 export class NormalState extends CanvasState{
+    private totalOffsetX = 0
+    private totalOffsetY = 0
     handleMousedown(e:any) {
         let pos:RelativePoint = {
             x: e.offsetX,
@@ -62,9 +64,34 @@ export class NormalState extends CanvasState{
     }
 
     handleKeydown(e: any): void {
+        let offsetX=0,offsetY=0
+        switch (e.key) {
+            case 'ArrowLeft':{
+                this.totalOffsetX--
+                offsetX = -1
+                break
+            }
+            case 'ArrowUp':{
+                this.totalOffsetY--
+                offsetY = -1
+                break
+            }
+            case 'ArrowRight':{
+                this.totalOffsetX++
+                offsetX = 1
+                break
+            }
+            case 'ArrowDown':{
+                this.totalOffsetY++
+                offsetY = 1
+                break
+            }
+        }
+        this.canvas.selectionManager.move(offsetX,offsetY)
     }
 
     handleKeyup(e: any): void {
+        this.canvas.selectionManager.stopMove()
     }
 }
 
