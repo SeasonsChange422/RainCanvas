@@ -1,6 +1,6 @@
-import {RectBorder, ShapePoints} from "../types/shape";
+import {RectBorder, ShapePoint} from "../types/shape";
 
-export function getRectBorder(points:ShapePoints[]):RectBorder{
+export function getRectBorder(points:ShapePoint[]):RectBorder{
     let ret:RectBorder = {minX:Infinity,minY:Infinity,maxX:-Infinity,maxY:-Infinity}
     points.forEach((point)=>{
         ret.minX = Math.min(ret.minX,point.x)

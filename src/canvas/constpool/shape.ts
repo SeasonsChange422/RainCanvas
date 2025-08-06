@@ -1,2 +1,4 @@
 const BORDER_COLOR = 'rgb(79,156,238)'
-export {BORDER_COLOR}
+const SELECT_AREA_COLOR = 'rgba(79,156,238,0.1)'
+
+export {BORDER_COLOR,SELECT_AREA_COLOR}

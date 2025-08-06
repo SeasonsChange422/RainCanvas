@@ -2,6 +2,8 @@ import {Shape} from "../models/shape";
 import {RelativePoint} from "../types/common";
 import {MAX_SCALE, MIN_SCALE, SCALE_STEP} from "../constpool/grid";
 import {Canvas} from "../models/canvas";
+import {SelectArea} from "../models/selectArea";
+import {SELECT_AREA_COLOR} from "../constpool/shape";
 
 export abstract class CanvasState {
     protected canvas
@@ -92,6 +94,12 @@ export class NormalState extends CanvasState{
 
     handleKeyup(e: any): void {
         this.canvas.selectionManager.stopMove()
+        switch (e.key) {
+            case 'Shift':{
+                this.canvas.selectArea = null
+                break
+            }
+        }
     }
 }
 
@@ -132,13 +140,33 @@ export class MultiSelectState extends CanvasState {
 
 // shift区域选择
 export class AreaSelectState extends CanvasState {
+    private startPoint:RelativePoint
+    private endPoint:RelativePoint
     handleMousedown(e:any) {
+        this.startPoint = {
+            x:e.offsetX,
+            y:e.offsetY
+        }
+        console.log(this.startPoint)
+        this.canvas.selectArea = new SelectArea(this.canvas.ctx,this.startPoint,{fillColor:SELECT_AREA_COLOR})
     }
 
     handleMousemove(e:any) {
+        this.endPoint = {
+            x:e.offsetX,
+            y:e.offsetY
+        }
+        this.canvas.selectArea&&this.canvas.selectArea.setEndPoint(this.endPoint)
     }
 
     handleMouseup(e:any) {
+        this.endPoint = {
+            x:e.offsetX,
+            y:e.offsetY
+        }
+        if(!this.startPoint||!this.endPoint)return
+        this.canvas.selectionManager.selectArea(this.startPoint,this.endPoint,this.canvas.shapes,this.canvas.originPoint,this.canvas.scale)
+        this.canvas.selectArea = null
     }
 
     handleMousewheel(e:any) {
@@ -149,6 +177,7 @@ export class AreaSelectState extends CanvasState {
     }
 
     handleKeyup(e: any): void {
+
     }
 }
 

@@ -1,6 +1,7 @@
 import {Shape} from "../models/shape";
 import {Command, MoveCommand} from "../command/command";
 import {CommandManager} from "./commandManager";
+import {OriginPoint, RelativePoint} from "../types/common";
 
 export class SelectionManager{
     private selectedShape
@@ -17,6 +18,13 @@ export class SelectionManager{
             this.selectedShape.add(shape)
             shape.select()
         }
+    }
+    selectArea(startPoint:RelativePoint,endPoint:RelativePoint,shapes:Shape[],originPoint:OriginPoint,scale:number){
+        shapes.forEach((shape)=>{
+            if(shape.isInArea(startPoint,endPoint,originPoint,scale)){
+                this.toggle(shape)
+            }
+        })
     }
     unselect(shape:Shape){
         if(this.selectedShape.has(shape)){

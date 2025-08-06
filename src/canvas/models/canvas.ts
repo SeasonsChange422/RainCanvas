@@ -4,6 +4,8 @@ import {Shape} from "./shape";
 import {AreaSelectState, CanvasState, MultiSelectState, NormalState} from "../state/canvasState";
 import {SelectionManager} from "../manager/selectionManager";
 import {CommandManager} from "../manager/commandManager";
+import {SelectArea} from "./selectArea";
+import {throttle} from "../utils/timer";
 
 export class Canvas {
     public el
@@ -13,10 +15,17 @@ export class Canvas {
     public scale = 1
     public originPoint:OriginPoint = {x:20,y:20}
     public state:CanvasState
+    private multiSelectState
+    private areaSelectState
+    private normalState
     public shapes:Shape[] = []
+    public selectArea:SelectArea
     public grid:Grid
     public selectionManager:SelectionManager
     public commandManager:CommandManager
+    private throttledMouseHandler:Function
+    private throttledKeyHandler:Function
+
     constructor(options:any) {
         if (options.el && typeof options.el === 'string') {
             this.el = document.querySelector(options.el);
@@ -37,7 +46,10 @@ export class Canvas {
         this.grid = new Grid(this.ctx)
         this.ctx._height = this.height
         this.ctx._width = this.width
-        this.state = new NormalState(this);
+        this.multiSelectState = new MultiSelectState(this)
+        this.areaSelectState = new AreaSelectState(this)
+        this.normalState = new NormalState(this);
+        this.state = this.normalState
         this.commandManager = new CommandManager()
         this.selectionManager = new SelectionManager(this.commandManager)
 
@@ -71,22 +83,25 @@ export class Canvas {
     handleKeyEvent(e:any) {
         const handler = `handle${e.type.charAt(0).toUpperCase() + e.type.slice(1)}`;
         if (e.ctrlKey || e.metaKey) { //window || mac
-            this.state = new MultiSelectState(this);
+            this.state = this.multiSelectState;
         } else if (e.shiftKey) {
-            this.state = new AreaSelectState(this);
+            this.state = this.areaSelectState;
         } else {
-            this.state = new NormalState(this);
+            this.state = this.normalState;
         }
         // @ts-ignore
         this.state[handler]?.(e)
     }
     registerEvent(){
-        this.el.addEventListener('mousewheel',this.handleEvent.bind(this))
+        this.throttledMouseHandler = throttle(this.handleEvent.bind(this), 8);
+        this.throttledKeyHandler = throttle(this.handleKeyEvent.bind(this), 32);
+
+        this.el.addEventListener('mousewheel',this.throttledMouseHandler)
         this.el.addEventListener('mousedown', this.handleEvent.bind(this));
-        this.el.addEventListener('mousemove', this.handleEvent.bind(this));
+        this.el.addEventListener('mousemove', this.throttledMouseHandler);
         this.el.addEventListener('mouseup', this.handleEvent.bind(this));
-        document.addEventListener('keydown', this.handleKeyEvent.bind(this));
-        document.addEventListener('keyup', this.handleKeyEvent.bind(this));
+        document.addEventListener('keydown', this.throttledKeyHandler);
+        document.addEventListener('keyup', this.throttledKeyHandler);
         this.el.oncontextmenu=()=>false
     }
     findShapeAt(pos:RelativePoint) {
@@ -103,6 +118,7 @@ export class Canvas {
         this.shapes.forEach((shape)=>{
             shape.draw(this.originPoint,this.scale)
         })
+        this.selectArea&&this.selectArea.draw(this.originPoint,this.scale)
         window.requestAnimationFrame(()=>{this.draw(loop)})
     }
     addShape(shape:Shape){

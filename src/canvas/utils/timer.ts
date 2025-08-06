@@ -1,12 +1,20 @@
-export function throttle(fn:Function,wait:number){
+export function throttle(fn:Function,wait:number):Function{
     let lastTime = Date.now()
-    return function (){
-        let args = arguments
+    let timer:number|null = null
+    return function (...args:any[]){
         //@ts-ignore
         let context = this
         if(lastTime+wait<=Date.now()){
             lastTime=Date.now()
             fn.apply(context,args)
+        } else {
+            if(timer){
+                clearTimeout(timer)
+                timer = null
+            }
+            timer = setTimeout(()=>{
+                fn.apply(context,args)
+            },wait)
         }
     }
 }

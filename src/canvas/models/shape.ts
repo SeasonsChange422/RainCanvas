@@ -1,23 +1,41 @@
 import {CanvasElement} from "./canvasElement";
 import {OriginPoint, RelativePoint} from "../types/common";
-import {RectBorder, ShapeOptions, ShapePoints} from "../types/shape";
+import {RectBorder, ShapeOptions, ShapePoint} from "../types/shape";
 import {BORDER_COLOR} from "../constpool/shape";
 import {getRectBorder} from "../utils/shapeUtil";
 
 export class Shape extends CanvasElement{
-    protected points:ShapePoints[]
+    protected points:ShapePoint[]
     protected isClose:boolean
     protected isFill:boolean
     protected fillColor:string
     protected strokeColor:string
     protected isSelected:boolean = false
-    constructor(ctx:any,points:ShapePoints[],options:ShapeOptions) {
+    private index = 0
+    constructor(ctx:any,points:ShapePoint[],options:ShapeOptions) {
         super(ctx);
         this.points = points
         this.isClose = options.isClose || false
         this.isFill = options.isFill || false
         this.fillColor = options.fillColor || 'rgb(255,255,255)'
         this.strokeColor = options.strokeColor || 'rgb(0,0,0)'
+    }
+    isInArea(startPoint:RelativePoint,endPoint:RelativePoint,originPoint:OriginPoint,scale:number):boolean{
+        let ret = true
+        this.points.map((point)=>{
+            return {
+                x:originPoint.x + point.x * scale,
+                y:originPoint.y + point.y * scale
+            }
+        }).forEach((point)=>{
+            if( point.x<Math.min(startPoint.x,endPoint.x)||
+                point.x>Math.max(startPoint.x,endPoint.x)||
+                point.y<Math.min(startPoint.y,endPoint.y)||
+                point.y>Math.max(startPoint.y,endPoint.y)){
+                ret = false
+            }
+        })
+        return ret
     }
     isPointInside(testPoint: RelativePoint, originPoint: OriginPoint, scale: number): boolean {
         if (!this.isClose){
@@ -63,7 +81,7 @@ export class Shape extends CanvasElement{
     }
 
     draw(originPoint: OriginPoint, scale: number) {
-        let points:ShapePoints[] = this.points.map((point)=> {
+        let points:ShapePoint[] = this.points.map((point)=> {
             return {
                     x: originPoint.x + point.x * scale,
                     y: originPoint.y + point.y * scale
@@ -86,7 +104,8 @@ export class Shape extends CanvasElement{
         this.isSelected&&!this.isClose&&this.drawBorder(points)
 
     }
-    drawBorder(points:ShapePoints[]){
+    drawBorder(points:ShapePoint[]){
+        this.index=(this.index++)%23
         let rectBorder:RectBorder = getRectBorder(points)
         this.ctx.strokeStyle = BORDER_COLOR
         this.ctx.strokeRect(rectBorder.minX, rectBorder.minY, rectBorder.maxX-rectBorder.minX, rectBorder.maxY-rectBorder.minY)

@@ -1,4 +1,4 @@
-export interface ShapePoints {
+export interface ShapePoint {
     x:number
     y:number
 }
