@@ -1,4 +1,4 @@
-export function throttle(fn:Function,wait:number):Function{
+export function throttle(fn:Function,wait:number){
     let lastTime = Date.now()
     let timer:number|null = null
     return function (...args:any[]){

@@ -23,8 +23,8 @@ export class Canvas {
     public grid:Grid
     public selectionManager:SelectionManager
     public commandManager:CommandManager
-    private throttledMouseHandler:Function = ()=>{}
-    private throttledKeyHandler:Function = ()=>{}
+    private throttledMouseHandler:(this: Document, ev: KeyboardEvent) => any = ()=>{}
+    private throttledKeyHandler:(this: Document, ev: KeyboardEvent) => any = ()=>{}
 
     constructor(options:any) {
         if (options.el && typeof options.el === 'string') {
@@ -97,12 +97,12 @@ export class Canvas {
         this.throttledMouseHandler = throttle(this.handleEvent.bind(this), 8);
         this.throttledKeyHandler = throttle(this.handleKeyEvent.bind(this), 32);
 
-        this.el.addEventListener('mousewheel',this.throttledMouseHandler(this))
+        this.el.addEventListener('mousewheel',this.throttledMouseHandler)
         this.el.addEventListener('mousedown', this.handleEvent.bind(this));
-        this.el.addEventListener('mousemove', this.throttledMouseHandler(this));
+        this.el.addEventListener('mousemove', this.throttledMouseHandler);
         this.el.addEventListener('mouseup', this.handleEvent.bind(this));
-        document.addEventListener('keydown', this.throttledKeyHandler(this));
-        document.addEventListener('keyup', this.throttledKeyHandler(this));
+        document.addEventListener('keydown', this.throttledKeyHandler);
+        document.addEventListener('keyup', this.throttledKeyHandler);
         this.el.oncontextmenu=()=>false
     }
     findShapeAt(pos:RelativePoint) {
