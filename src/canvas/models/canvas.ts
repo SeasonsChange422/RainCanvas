@@ -57,6 +57,9 @@ export class Canvas {
         this.addShape(new Shape(this.ctx,[{x:330,y:330},{x:221,y:330},{x:443,y:770},{x:445,y:123}],{
             isClose:false,isFill:false
         }))
+        this.addShape(new Shape(this.ctx,[{x:100,y:100},{x:200,y:100},{x:200,y:0}],{
+            isClose:true,isFill:true
+        }))
         this.draw()
         this.registerEvent()
     }

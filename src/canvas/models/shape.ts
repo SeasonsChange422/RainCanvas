@@ -72,7 +72,7 @@ export class Shape extends CanvasElement{
         )
         this.ctx.beginPath()
         this.ctx.fillStyle = this.fillColor
-        this.ctx.strokeStyle = this.strokeColor
+        this.ctx.strokeStyle = this.isSelected&&this.isClose?BORDER_COLOR:this.strokeColor
         points.forEach((point,index)=>{
             if(index===0){
                 this.ctx.moveTo(point.x,point.y)
@@ -83,7 +83,7 @@ export class Shape extends CanvasElement{
         this.isClose&&this.ctx.closePath()
         this.isFill&&this.ctx.fill()
         this.ctx.stroke()
-        this.isSelected&&this.drawBorder(points)
+        this.isSelected&&!this.isClose&&this.drawBorder(points)
 
     }
     drawBorder(points:ShapePoints[]){
