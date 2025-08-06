@@ -1,7 +1,8 @@
 import {CanvasElement} from "./canvasElement";
 import {OriginPoint, RelativePoint} from "../types/common";
-import {ShapeOptions, ShapePoints} from "../types/shape";
+import {RectBorder, ShapeOptions, ShapePoints} from "../types/shape";
 import {BORDER_COLOR} from "../constpool/shape";
+import {getRectBorder} from "../utils/shapeUtil";
 
 export class Shape extends CanvasElement{
     protected points:ShapePoints[]
@@ -14,12 +15,21 @@ export class Shape extends CanvasElement{
         super(ctx);
         this.points = points
         this.isClose = options.isClose || false
-        this.isFill = options.isFill || true
+        this.isFill = options.isFill || false
         this.fillColor = options.fillColor || 'rgb(255,255,255)'
         this.strokeColor = options.strokeColor || 'rgb(0,0,0)'
     }
     isPointInside(testPoint: RelativePoint, originPoint: OriginPoint, scale: number): boolean {
-        if (!this.isClose) return false;
+        if (!this.isClose){
+            let rectBorder:RectBorder = getRectBorder(this.points)
+            if(rectBorder.minX<=testPoint.x
+                &&rectBorder.maxX>=testPoint.x
+                &&rectBorder.minY<=testPoint.y
+                &&rectBorder.maxX>=testPoint.y){
+                return true
+            }
+            return false
+        }
         const transformedPoints = this.points.map(p => ({
             x: originPoint.x + p.x * scale,
             y: originPoint.y + p.y * scale
@@ -77,15 +87,9 @@ export class Shape extends CanvasElement{
 
     }
     drawBorder(points:ShapePoints[]){
-        let minX = Infinity,minY = Infinity,maxX = -Infinity,maxY = -Infinity
-        points.forEach((point)=>{
-            minX = Math.min(minX,point.x)
-            minY = Math.min(minY,point.y)
-            maxX = Math.max(maxX,point.x)
-            maxY = Math.max(maxY,point.y)
-            this.ctx.strokeStyle = BORDER_COLOR
-            this.ctx.strokeRect(minX, minY, maxX-minX, maxY-minY)
-        })
+        let rectBorder:RectBorder = getRectBorder(points)
+        this.ctx.strokeStyle = BORDER_COLOR
+        this.ctx.strokeRect(rectBorder.minX, rectBorder.minY, rectBorder.maxX-rectBorder.minX, rectBorder.maxY-rectBorder.minY)
     }
     move(offsetX:number,offsetY:number){
         this.points = this.points.map((point)=>{

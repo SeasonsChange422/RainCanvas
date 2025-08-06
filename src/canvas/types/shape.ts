@@ -9,3 +9,10 @@ export interface ShapeOptions {
     fillColor?:string | null
     strokeColor?:string | null
 }
+
+export interface RectBorder {
+    minX:number
+    minY:number
+    maxX:number
+    maxY:number
+}
