@@ -114,9 +114,15 @@ export const SelectTool: Tool = {
     onKeyDown(e:KeyboardEvent, ctx:ToolContext) {
         const canvas = ctx.canvas;
         // Space 临时平移
-        if (e.code === "Space") {
-            ctx.setTool("tool-pan");
-            return;
+        switch (e.code) {
+            case 'Space':{
+                ctx.setTool("tool-pan");
+                return;
+            }
+            case 'Delete':{
+                canvas.selectionManager.deleteShapes()
+                return
+            }
         }
         // 撤销/重做
         if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") {

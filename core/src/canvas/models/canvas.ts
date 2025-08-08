@@ -1,13 +1,14 @@
-import {OriginPoint, RelativePoint} from "../types/common";
+import {OriginPoint, RelativePoint} from "../core/common";
 import {Grid} from "./grid";
 import {Shape} from "./shape";
-import {SelectionManager} from "../manager/selectionManager";
-import {CommandManager} from "../manager/commandManager";
+import {SelectionManager} from "../core/selectionManager";
+import {CommandManager} from "../core/commandManager";
 import {SelectArea} from "./selectArea";
 import {ToolManager} from "../core/toolManager";
 import {SelectTool} from "../tools/selectTool";
 import {PanTool} from "../tools/panTool";
 import {Tool} from "../core/tool";
+import {ShapeManager} from "../core/shapeManager";
 
 export class Canvas {
     public el
@@ -16,10 +17,11 @@ export class Canvas {
     public height = 150
     public scale = 1
     public originPoint:OriginPoint = {x:20,y:20}
-    private toolManager:ToolManager
     public shapes:Shape[] = []
     public selectArea:SelectArea | null
     public grid:Grid
+    private toolManager:ToolManager
+    private shapeManager:ShapeManager
     public selectionManager:SelectionManager
     public commandManager:CommandManager
     // private rafId: number | null = null;
@@ -40,17 +42,6 @@ export class Canvas {
         if (isNaN(parseInt(options.height))) {
             throw "height error"
         }
-        this.width = options.width
-        this.height = options.height
-        this.grid = new Grid(this.ctx)
-        this.ctx._height = this.height
-        this.ctx._width = this.width
-        this.selectArea = null
-        this.commandManager = new CommandManager()
-        this.toolManager = new ToolManager(this.ctx)
-        this.selectionManager = new SelectionManager(this.commandManager)
-
-        this.resize(this.height, this.width)
         this.addShape(new Shape(this.ctx,[{x:330,y:330},{x:770,y:330},{x:770,y:770},{x:330,y:770}],{
             isClose:true,isFill:true
         }))
@@ -69,6 +60,19 @@ export class Canvas {
         this.addShape(new Shape(this.ctx,[{x:100,y:100},{x:200,y:100},{x:200,y:0}],{
             isClose:true,isFill:true
         }))
+        this.width = options.width
+        this.height = options.height
+        this.grid = new Grid(this.ctx)
+        this.ctx._height = this.height
+        this.ctx._width = this.width
+        this.selectArea = null
+        this.commandManager = new CommandManager()
+        this.shapeManager = new ShapeManager(this.shapes)
+        this.toolManager = new ToolManager(this.ctx)
+        this.selectionManager = new SelectionManager(this.commandManager,this.shapeManager)
+
+        this.resize(this.height, this.width)
+
         this.draw()
         this.registerTools();
         this.registerToolEvents();

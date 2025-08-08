@@ -1,9 +1,5 @@
 import {Shape} from "../models/shape";
-
-export abstract class Command {
-    abstract execute():void;
-    abstract undo():void;
-}
+import {Command} from "../core/command";
 
 export class MoveCommand extends Command {
     private shape
