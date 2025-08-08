@@ -1,23 +1,23 @@
 import {Command} from "../command/command";
 
 export class CommandManager{
-    private history:Command[][]
-    constructor() {
-        this.history = []
+    private history: Command[][] = [];
+    private redoStack: Command[][] = [];
+    push(commands: Command[]) { this.history.push(commands); this.redoStack.length = 0; }
+    execute(commands: Command[], push: boolean) {
+        for (const c of commands) c.execute();
+        if (push) this.push(commands);
     }
-    push(commands:Command[]){
-        this.history.push(commands)
+    undo() {
+        const group = this.history.pop();
+        if (!group) return;
+        for (let i = group.length - 1; i >= 0; i--) group[i].undo();
+        this.redoStack.push(group);
     }
-    execute(commands:Command[],push:boolean){
-        commands.forEach((command)=>{
-            command.execute()
-        })
-        push&&this.history.push(commands)
-    }
-    undo(){
-        let commands:Command[] = this.history.pop() || []
-        commands.forEach((command)=>{
-            command.undo()
-        })
+    redo() {
+        const group = this.redoStack.pop();
+        if (!group) return;
+        for (const c of group) c.execute();
+        this.history.push(group);
     }
 }

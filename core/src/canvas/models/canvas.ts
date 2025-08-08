@@ -1,11 +1,13 @@
 import {OriginPoint, RelativePoint} from "../types/common";
 import {Grid} from "./grid";
 import {Shape} from "./shape";
-import {AreaSelectState, CanvasState, MultiSelectState, NormalState} from "../state/canvasState";
 import {SelectionManager} from "../manager/selectionManager";
 import {CommandManager} from "../manager/commandManager";
 import {SelectArea} from "./selectArea";
-import {throttle} from "../utils/timer";
+import {ToolManager} from "../core/toolManager";
+import {SelectTool} from "../tools/selectTool";
+import {PanTool} from "../tools/panTool";
+import {Tool} from "../core/tool";
 
 export class Canvas {
     public el
@@ -14,17 +16,14 @@ export class Canvas {
     public height = 150
     public scale = 1
     public originPoint:OriginPoint = {x:20,y:20}
-    public state:CanvasState
-    private multiSelectState
-    private areaSelectState
-    private normalState
+    private toolManager:ToolManager
     public shapes:Shape[] = []
     public selectArea:SelectArea | null
     public grid:Grid
     public selectionManager:SelectionManager
     public commandManager:CommandManager
-    private throttledMouseHandler:(this: Document, ev: KeyboardEvent) => any = ()=>{}
-    private throttledKeyHandler:(this: Document, ev: KeyboardEvent) => any = ()=>{}
+    // private rafId: number | null = null;
+    // private dirty = true;
 
     constructor(options:any) {
         if (options.el && typeof options.el === 'string') {
@@ -46,12 +45,9 @@ export class Canvas {
         this.grid = new Grid(this.ctx)
         this.ctx._height = this.height
         this.ctx._width = this.width
-        this.multiSelectState = new MultiSelectState(this)
-        this.areaSelectState = new AreaSelectState(this)
-        this.normalState = new NormalState(this);
-        this.state = this.normalState
         this.selectArea = null
         this.commandManager = new CommandManager()
+        this.toolManager = new ToolManager(this.ctx)
         this.selectionManager = new SelectionManager(this.commandManager)
 
         this.resize(this.height, this.width)
@@ -74,36 +70,37 @@ export class Canvas {
             isClose:true,isFill:true
         }))
         this.draw()
-        this.registerEvent()
+        this.registerTools();
+        this.registerToolEvents();
     }
-    handleEvent(e:any) {
-        const handler = `handle${e.type.charAt(0).toUpperCase() + e.type.slice(1)}`;
-        // @ts-ignore
-        this.state[handler]?.(e);
+    private registerTools() {
+        this.toolManager = new ToolManager({
+            canvas: this,
+            setTool: (id: string) => this.toolManager.setTool(id),
+        });
+        this.toolManager.register(<Tool>SelectTool);
+        this.toolManager.register(<Tool>PanTool);
+        this.toolManager.setTool("tool-select"); // 默认使用选择工具
     }
-    handleKeyEvent(e:any) {
-        const handler = `handle${e.type.charAt(0).toUpperCase() + e.type.slice(1)}`;
-        if (e.ctrlKey || e.metaKey) { //window || mac
-            this.state = this.multiSelectState;
-        } else if (e.shiftKey) {
-            this.state = this.areaSelectState;
-        } else {
-            this.state = this.normalState;
-        }
-        // @ts-ignore
-        this.state[handler]?.(e)
-    }
-    registerEvent(){
-        this.throttledMouseHandler = throttle(this.handleEvent.bind(this), 8);
-        this.throttledKeyHandler = throttle(this.handleKeyEvent.bind(this), 32);
 
-        this.el.addEventListener('mousewheel',this.throttledMouseHandler)
-        this.el.addEventListener('mousedown', this.handleEvent.bind(this));
-        this.el.addEventListener('mousemove', this.throttledMouseHandler);
-        this.el.addEventListener('mouseup', this.handleEvent.bind(this));
-        document.addEventListener('keydown', this.throttledKeyHandler);
-        document.addEventListener('keyup', this.throttledKeyHandler);
-        this.el.oncontextmenu=()=>false
+    private registerToolEvents() {
+        this.el.addEventListener("pointerdown", this.toolManager.handlePointerDown, { passive: false });
+        this.el.addEventListener("pointermove", this.toolManager.handlePointerMove, { passive: false });
+        window.addEventListener("pointerup", this.toolManager.handlePointerUp, { passive: false });
+        this.el.addEventListener("wheel", this.toolManager.handleWheel, { passive: false });
+        document.addEventListener("keydown", this.toolManager.handleKeyDown, { passive: false });
+        document.addEventListener("keyup", this.toolManager.handleKeyUp, { passive: false });
+
+        this.el.oncontextmenu = () => false;
+    }
+
+    dispose() {
+        this.el.removeEventListener("pointerdown", this.toolManager.handlePointerDown as any);
+        this.el.removeEventListener("pointermove", this.toolManager.handlePointerMove as any);
+        window.removeEventListener("pointerup", this.toolManager.handlePointerUp as any);
+        this.el.removeEventListener("wheel", this.toolManager.handleWheel as any);
+        document.removeEventListener("keydown", this.toolManager.handleKeyDown as any);
+        document.removeEventListener("keyup", this.toolManager.handleKeyUp as any);
     }
     findShapeAt(pos:RelativePoint) {
         for (let i = this.shapes.length - 1; i >= 0; i--) {
@@ -113,14 +110,18 @@ export class Canvas {
         }
         return null;
     }
-    draw(loop = true){
-        this.ctx.clearRect(0, 0, this.width, this.height);
-        this.grid.draw(this.originPoint,this.scale)
-        this.shapes.forEach((shape)=>{
-            shape.draw(this.originPoint,this.scale)
-        })
-        this.selectArea&&this.selectArea.draw(this.originPoint,this.scale)
-        window.requestAnimationFrame(()=>{this.draw(loop)})
+    // invalidate() { this.dirty = true; if (this.rafId == null) this.rafId = requestAnimationFrame(() => this.draw()); }
+
+    draw(loop=true){
+        // this.rafId = null;
+        // if (!this.dirty) return;
+        // this.dirty = false;
+        const w = this.el.width, h = this.el.height;
+        this.ctx.clearRect(0, 0, w, h);
+        this.grid.draw(this.originPoint, this.scale);
+        this.shapes.forEach(shape => shape.draw(this.originPoint, this.scale));
+        this.selectArea && this.selectArea.draw(this.originPoint, this.scale);
+        requestAnimationFrame(() => this.draw(loop))
     }
     addShape(shape:Shape){
         this.shapes.push(shape)
