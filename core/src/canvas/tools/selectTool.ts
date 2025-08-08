@@ -34,10 +34,6 @@ export const SelectTool: Tool = {
         const isShift = e.shiftKey;
         const isMulti = e.ctrlKey || e.metaKey;
 
-        if (e.button === 0) {
-            if (shape) canvas.selectionManager.singleSelect(shape);
-            // return;
-        }
         // if (e.button === 2) {
         //     if (shape) canvas.selectionManager.singleSelect(shape);
         //     // 右键菜单
