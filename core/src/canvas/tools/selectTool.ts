@@ -41,7 +41,7 @@ export const SelectTool: Tool = {
         // }
         if (isShift) {
             // 开始框选
-            canvas.selectArea = new SelectArea(canvas.ctx, pos, { fillColor: SELECT_AREA_COLOR });
+            canvas.selectionManager.selectedArea = new SelectArea(canvas.ctx, pos, { fillColor: SELECT_AREA_COLOR });
             (canvas as any)._mode = "area" as Mode;
             return;
         }
@@ -86,7 +86,7 @@ export const SelectTool: Tool = {
             canvas.originPoint.y += e.offsetY - last.y;
             (canvas as any)._lastPt = { x: e.offsetX, y: e.offsetY };
         } else if (mode === "area") {
-            canvas.selectArea?.setEndPoint({ x: e.offsetX, y: e.offsetY });
+            canvas.selectionManager.selectedArea?.setEndPoint({ x: e.offsetX, y: e.offsetY });
         }
     },
 
@@ -96,12 +96,12 @@ export const SelectTool: Tool = {
         if (mode === "drag") {
             canvas.selectionManager.stopMove();
         } else if (mode === "area") {
-            const start = (canvas.selectArea as any)?.startPoint || null;
+            const start = canvas.selectionManager.selectedArea?.startPoint || null;
             const end = { x: e.offsetX, y: e.offsetY };
             if (start) {
                 canvas.selectionManager.selectArea(start, end, canvas.shapes, canvas.originPoint, canvas.scale);
             }
-            canvas.selectArea = null;
+            canvas.selectionManager.selectedArea = null;
         }
         (canvas as any)._mode = "idle";
     },
@@ -163,7 +163,7 @@ export const SelectTool: Tool = {
             canvas.selectionManager.stopMove();
         }
         if (e.key === "Shift") {
-            canvas.selectArea = null;
+            canvas.selectionManager.selectedArea = null;
         }
     },
 };

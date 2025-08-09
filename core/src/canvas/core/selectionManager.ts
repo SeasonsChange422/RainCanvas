@@ -7,6 +7,7 @@ import {ShapeManager} from "./shapeManager";
 import {DelCommand} from "../commands/delCommand";
 import {PasteCommand} from "../commands/pasteCommand";
 import {deepCopyObject} from "../utils/copy";
+import {SelectArea} from "../models/selectArea";
 
 export class SelectionManager {
     private selectedShapes
@@ -14,11 +15,13 @@ export class SelectionManager {
     private shapeManager
     private totalOffsetX = 0
     private totalOffsetY = 0
+    public selectedArea:SelectArea | null
 
     constructor(commandManager: CommandManager,shapeManager:ShapeManager) {
         this.selectedShapes = new Set<Shape>()
         this.commandManager = commandManager
         this.shapeManager = shapeManager
+        this.selectedArea = null
     }
 
     singleSelect(shape: Shape) {
@@ -109,5 +112,9 @@ export class SelectionManager {
     }
     paste(){
         this.commandManager.execute([new PasteCommand(this.shapeManager)],true)
+    }
+
+    draw(origin:OriginPoint,scale:number){
+        this.selectedArea&&this.selectedArea.draw(origin,scale)
     }
 }

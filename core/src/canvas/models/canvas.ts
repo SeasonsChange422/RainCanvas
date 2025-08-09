@@ -17,8 +17,6 @@ export class Canvas {
     public height = 150
     public scale = 1
     public originPoint:OriginPoint = {x:20,y:20}
-    public shapes:Shape[] = []
-    public selectArea:SelectArea | null
     public grid:Grid
     private toolManager:ToolManager
     private shapeManager:ShapeManager
@@ -42,30 +40,30 @@ export class Canvas {
         if (isNaN(parseInt(options.height))) {
             throw "height error"
         }
-        this.addShape(new Shape(this.ctx,[{x:330,y:330},{x:770,y:330},{x:770,y:770},{x:330,y:770}],{
+        let shapes = []
+        shapes.push(new Shape(this.ctx,[{x:330,y:330},{x:770,y:330},{x:770,y:770},{x:330,y:770}],{
             isClose:true,isFill:true
         }))
-        this.addShape(new Shape(this.ctx,[{x:330,y:330},{x:770,y:330},{x:770,y:770},{x:330,y:770}],{
+        shapes.push(new Shape(this.ctx,[{x:330,y:330},{x:770,y:330},{x:770,y:770},{x:330,y:770}],{
             isClose:true,isFill:true
         }))
-        this.addShape(new Shape(this.ctx,[{x:330,y:330},{x:770,y:330},{x:770,y:770},{x:330,y:770}],{
+        shapes.push(new Shape(this.ctx,[{x:330,y:330},{x:770,y:330},{x:770,y:770},{x:330,y:770}],{
             isClose:true,isFill:true
         }))
-        this.addShape(new Shape(this.ctx,[{x:330,y:330},{x:770,y:330},{x:770,y:770},{x:330,y:770}],{
+        shapes.push(new Shape(this.ctx,[{x:330,y:330},{x:770,y:330},{x:770,y:770},{x:330,y:770}],{
             isClose:true,isFill:true
         }))
-        this.addShape(new Shape(this.ctx,[{x:330,y:330},{x:221,y:330},{x:246,y:770},{x:445,y:123}],{
+        shapes.push(new Shape(this.ctx,[{x:330,y:330},{x:221,y:330},{x:246,y:770},{x:445,y:123}],{
             isClose:false,isFill:false
         }))
-        this.addShape(new Shape(this.ctx,[{x:100,y:100},{x:200,y:100},{x:200,y:0}],{
+        shapes.push(new Shape(this.ctx,[{x:100,y:100},{x:200,y:100},{x:200,y:0}],{
             isClose:true,isFill:true
         }))
         this.width = options.width
         this.height = options.height
         this.grid = new Grid(this.ctx)
-        this.selectArea = null
         this.commandManager = new CommandManager()
-        this.shapeManager = new ShapeManager(this.shapes)
+        this.shapeManager = new ShapeManager(shapes)
         this.selectionManager = new SelectionManager(this.commandManager,this.shapeManager)
 
         this.resize(this.height, this.width)
@@ -116,12 +114,10 @@ export class Canvas {
         this.ctx.clearRect(0, 0, w, h);
         this.grid.draw(this.originPoint, this.scale);
         this.shapeManager.draw(this.originPoint,this.scale)
-        this.selectArea && this.selectArea.draw(this.originPoint, this.scale);
+        this.selectionManager.draw(this.originPoint,this.scale)
         requestAnimationFrame(() => this.draw(loop))
     }
-    addShape(shape:Shape){
-        this.shapes.push(shape)
-    }
+
     resize(height:number, width:number) {
         this.el.width = width
         this.el.height = height
