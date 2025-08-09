@@ -2,6 +2,7 @@ import {Command} from "../core/command";
 import {ShapeManager} from "../core/shapeManager";
 import {Shape} from "../models/shape";
 import {deepCopyObject} from "../utils/copy";
+import {getRandomNumber} from "../utils/random";
 
 export class PasteCommand extends Command{
     private shapeManager:ShapeManager
@@ -16,6 +17,7 @@ export class PasteCommand extends Command{
         })
         this.pastedShapes.forEach((shape)=>{
             shape.generalId()
+            shape.move(50,50)
         })
         this.shapeManager.paste(this.pastedShapes)
     }
