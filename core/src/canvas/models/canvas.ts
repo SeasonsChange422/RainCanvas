@@ -3,7 +3,6 @@ import {Grid} from "./grid";
 import {Shape} from "./shape";
 import {SelectionManager} from "../core/selectionManager";
 import {CommandManager} from "../core/commandManager";
-import {SelectArea} from "./selectArea";
 import {ToolManager} from "../core/toolManager";
 import {SelectTool} from "../tools/selectTool";
 import {PanTool} from "../tools/panTool";
@@ -32,7 +31,7 @@ export class Canvas {
         if (this.el.getContext) {
             this.ctx = this.el.getContext('2d');
         } else {
-            //
+            throw ('canvas error')
         }
         if (isNaN(parseInt(options.width))) {
             throw "width error"
@@ -64,6 +63,10 @@ export class Canvas {
         this.grid = new Grid(this.ctx)
         this.commandManager = new CommandManager()
         this.shapeManager = new ShapeManager(shapes)
+        this.toolManager = new ToolManager({
+            canvas: this,
+            setTool: (id: string) => this.toolManager.setTool(id),
+        });
         this.selectionManager = new SelectionManager(this.commandManager,this.shapeManager)
 
         this.resize(this.height, this.width)
@@ -73,10 +76,6 @@ export class Canvas {
         this.registerToolEvents();
     }
     private registerTools() {
-        this.toolManager = new ToolManager({
-            canvas: this,
-            setTool: (id: string) => this.toolManager.setTool(id),
-        });
         this.toolManager.register(<Tool>SelectTool);
         this.toolManager.register(<Tool>PanTool);
         this.toolManager.setTool("tool-select"); // 默认使用选择工具

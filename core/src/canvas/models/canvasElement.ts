@@ -2,7 +2,7 @@ import {OriginPoint} from "../core/common";
 
 export abstract class CanvasElement{
     protected ctx
-    id
+    public id:string = '-1'
     constructor(ctx:any) {
         this.ctx = ctx
         this.generalId()

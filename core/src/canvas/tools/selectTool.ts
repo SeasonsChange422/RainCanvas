@@ -99,7 +99,7 @@ export const SelectTool: Tool = {
             const start = canvas.selectionManager.selectedArea?.startPoint || null;
             const end = { x: e.offsetX, y: e.offsetY };
             if (start) {
-                canvas.selectionManager.selectArea(start, end, canvas.shapes, canvas.originPoint, canvas.scale);
+                canvas.selectionManager.selectArea(start, end, canvas.originPoint, canvas.scale);
             }
             canvas.selectionManager.selectedArea = null;
         }

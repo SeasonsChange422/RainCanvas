@@ -3,8 +3,8 @@ import {ShapeOptions, ShapePoint} from "../core/shape";
 import {OriginPoint, RelativePoint} from "../core/common";
 
 export class SelectArea extends Shape{
-    private startPoint:ShapePoint
-    private endPoint:ShapePoint
+    public startPoint:ShapePoint
+    public endPoint:ShapePoint
     constructor(ctx:any,startPoint:ShapePoint,options:ShapeOptions) {
         super(ctx,[],options);
         this.startPoint = startPoint

@@ -2,7 +2,7 @@ import {Shape} from "../models/shape";
 import {OriginPoint, RelativePoint} from "./common";
 
 export class ShapeManager {
-    private shapes:Shape[]
+    public shapes:Shape[]
     public copyShapes:Shape[]
     constructor(shapes:Shape[]) {
         this.shapes = shapes

@@ -1,4 +1,4 @@
-export function getRandomNumber(min,max){
+export function getRandomNumber(min:number,max:number){
     switch(arguments.length){
         case 1:
             return Math.random()*min+1;

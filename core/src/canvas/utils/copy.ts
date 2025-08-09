@@ -1,10 +1,10 @@
-export function deepCopyObject(obj,map=new WeakMap()){
+export function deepCopyObject(obj:any,map=new WeakMap()):any{
     if (obj === null || typeof obj !== 'object') {
         return obj;
     }
     if (map.has(obj)) return map.get(obj);
     const type = Object.prototype.toString.call(obj).slice(8, -1);
-    let clone;
+    let clone:any;
 
     switch (type) {
         case 'Date':
@@ -14,12 +14,12 @@ export function deepCopyObject(obj,map=new WeakMap()){
         case 'Set':
             clone = new Set();
             map.set(obj, clone);
-            obj.forEach(value => clone.add(deepCopyObject(value, map)));
+            obj.forEach((value:any) => clone.add(deepCopyObject(value, map)));
             return clone;
         case 'Map':
             clone = new Map();
             map.set(obj, clone);
-            obj.forEach((value, key) => clone.set(key, deepCopyObject(value, map)));
+            obj.forEach((value:any, key:string) => clone.set(key, deepCopyObject(value, map)));
             return clone;
         case 'Symbol':
             return Symbol(obj.description);
@@ -28,7 +28,7 @@ export function deepCopyObject(obj,map=new WeakMap()){
         case 'Array':
             clone = [];
             map.set(obj, clone);
-            obj.forEach((item, i) => clone[i] = deepCopyObject(item, map));
+            obj.forEach((item:any, i:number) => clone[i] = deepCopyObject(item, map));
             return clone;
         case 'CanvasRenderingContext2D':
             return obj

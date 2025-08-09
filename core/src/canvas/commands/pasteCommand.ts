@@ -2,7 +2,6 @@ import {Command} from "../core/command";
 import {ShapeManager} from "../core/shapeManager";
 import {Shape} from "../models/shape";
 import {deepCopyObject} from "../utils/copy";
-import {getRandomNumber} from "../utils/random";
 
 export class PasteCommand extends Command{
     private shapeManager:ShapeManager
