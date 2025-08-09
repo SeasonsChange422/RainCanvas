@@ -1,4 +1,4 @@
-import {RectBorder, ShapePoint} from "../types/shape";
+import {RectBorder, ShapePoint} from "../core/shape";
 
 export function getRectBorder(points:ShapePoint[]):RectBorder{
     let ret:RectBorder = {minX:Infinity,minY:Infinity,maxX:-Infinity,maxY:-Infinity}

@@ -1,25 +1,24 @@
-import {OriginPoint, RelativePoint} from "../types/common";
+import {OriginPoint, RelativePoint} from "../core/common";
 import {Grid} from "./grid";
 import {Shape} from "./shape";
-import {SelectionManager} from "../manager/selectionManager";
-import {CommandManager} from "../manager/commandManager";
-import {SelectArea} from "./selectArea";
+import {SelectionManager} from "../core/selectionManager";
+import {CommandManager} from "../core/commandManager";
 import {ToolManager} from "../core/toolManager";
 import {SelectTool} from "../tools/selectTool";
 import {PanTool} from "../tools/panTool";
 import {Tool} from "../core/tool";
+import {ShapeManager} from "../core/shapeManager";
 
 export class Canvas {
     public el
-    public ctx
+    public ctx:CanvasRenderingContext2D
     public width = 300
     public height = 150
     public scale = 1
     public originPoint:OriginPoint = {x:20,y:20}
-    private toolManager:ToolManager
-    public shapes:Shape[] = []
-    public selectArea:SelectArea | null
     public grid:Grid
+    private toolManager:ToolManager
+    private shapeManager:ShapeManager
     public selectionManager:SelectionManager
     public commandManager:CommandManager
     // private rafId: number | null = null;
@@ -32,7 +31,7 @@ export class Canvas {
         if (this.el.getContext) {
             this.ctx = this.el.getContext('2d');
         } else {
-            //
+            throw ('canvas error')
         }
         if (isNaN(parseInt(options.width))) {
             throw "width error"
@@ -40,44 +39,43 @@ export class Canvas {
         if (isNaN(parseInt(options.height))) {
             throw "height error"
         }
+        let shapes = []
+        shapes.push(new Shape(this.ctx,[{x:330,y:330},{x:770,y:330},{x:770,y:770},{x:330,y:770}],{
+            isClose:true,isFill:true
+        }))
+        shapes.push(new Shape(this.ctx,[{x:330,y:330},{x:770,y:330},{x:770,y:770},{x:330,y:770}],{
+            isClose:true,isFill:true
+        }))
+        shapes.push(new Shape(this.ctx,[{x:330,y:330},{x:770,y:330},{x:770,y:770},{x:330,y:770}],{
+            isClose:true,isFill:true
+        }))
+        shapes.push(new Shape(this.ctx,[{x:330,y:330},{x:770,y:330},{x:770,y:770},{x:330,y:770}],{
+            isClose:true,isFill:true
+        }))
+        shapes.push(new Shape(this.ctx,[{x:330,y:330},{x:221,y:330},{x:246,y:770},{x:445,y:123}],{
+            isClose:false,isFill:false
+        }))
+        shapes.push(new Shape(this.ctx,[{x:100,y:100},{x:200,y:100},{x:200,y:0}],{
+            isClose:true,isFill:true
+        }))
         this.width = options.width
         this.height = options.height
         this.grid = new Grid(this.ctx)
-        this.ctx._height = this.height
-        this.ctx._width = this.width
-        this.selectArea = null
         this.commandManager = new CommandManager()
-        this.toolManager = new ToolManager(this.ctx)
-        this.selectionManager = new SelectionManager(this.commandManager)
+        this.shapeManager = new ShapeManager(shapes)
+        this.toolManager = new ToolManager({
+            canvas: this,
+            setTool: (id: string) => this.toolManager.setTool(id),
+        });
+        this.selectionManager = new SelectionManager(this.commandManager,this.shapeManager)
 
         this.resize(this.height, this.width)
-        this.addShape(new Shape(this.ctx,[{x:330,y:330},{x:770,y:330},{x:770,y:770},{x:330,y:770}],{
-            isClose:true,isFill:true
-        }))
-        this.addShape(new Shape(this.ctx,[{x:330,y:330},{x:770,y:330},{x:770,y:770},{x:330,y:770}],{
-            isClose:true,isFill:true
-        }))
-        this.addShape(new Shape(this.ctx,[{x:330,y:330},{x:770,y:330},{x:770,y:770},{x:330,y:770}],{
-            isClose:true,isFill:true
-        }))
-        this.addShape(new Shape(this.ctx,[{x:330,y:330},{x:770,y:330},{x:770,y:770},{x:330,y:770}],{
-            isClose:true,isFill:true
-        }))
-        this.addShape(new Shape(this.ctx,[{x:330,y:330},{x:221,y:330},{x:246,y:770},{x:445,y:123}],{
-            isClose:false,isFill:false
-        }))
-        this.addShape(new Shape(this.ctx,[{x:100,y:100},{x:200,y:100},{x:200,y:0}],{
-            isClose:true,isFill:true
-        }))
+
         this.draw()
         this.registerTools();
         this.registerToolEvents();
     }
     private registerTools() {
-        this.toolManager = new ToolManager({
-            canvas: this,
-            setTool: (id: string) => this.toolManager.setTool(id),
-        });
         this.toolManager.register(<Tool>SelectTool);
         this.toolManager.register(<Tool>PanTool);
         this.toolManager.setTool("tool-select"); // 默认使用选择工具
@@ -103,12 +101,7 @@ export class Canvas {
         document.removeEventListener("keyup", this.toolManager.handleKeyUp as any);
     }
     findShapeAt(pos:RelativePoint) {
-        for (let i = this.shapes.length - 1; i >= 0; i--) {
-            if (this.shapes[i].isPointInside(pos,this.originPoint,this.scale)) {
-                return this.shapes[i];
-            }
-        }
-        return null;
+        return this.shapeManager.findShapeAt(pos,this.originPoint,this.scale)
     }
     // invalidate() { this.dirty = true; if (this.rafId == null) this.rafId = requestAnimationFrame(() => this.draw()); }
 
@@ -119,13 +112,11 @@ export class Canvas {
         const w = this.el.width, h = this.el.height;
         this.ctx.clearRect(0, 0, w, h);
         this.grid.draw(this.originPoint, this.scale);
-        this.shapes.forEach(shape => shape.draw(this.originPoint, this.scale));
-        this.selectArea && this.selectArea.draw(this.originPoint, this.scale);
+        this.shapeManager.draw(this.originPoint,this.scale)
+        this.selectionManager.draw(this.originPoint,this.scale)
         requestAnimationFrame(() => this.draw(loop))
     }
-    addShape(shape:Shape){
-        this.shapes.push(shape)
-    }
+
     resize(height:number, width:number) {
         this.el.width = width
         this.el.height = height
