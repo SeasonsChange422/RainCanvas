@@ -5,24 +5,26 @@ import {CommandManager} from "./commandManager";
 import {OriginPoint, RelativePoint} from "./common";
 import {ShapeManager} from "./shapeManager";
 import {DelCommand} from "../commands/delCommand";
+import {PasteCommand} from "../commands/pasteCommand";
+import {deepCopyObject} from "../utils/copy";
 
 export class SelectionManager {
-    private selectedShape
+    private selectedShapes
     private commandManager
     private shapeManager
     private totalOffsetX = 0
     private totalOffsetY = 0
 
     constructor(commandManager: CommandManager,shapeManager:ShapeManager) {
-        this.selectedShape = new Set<Shape>()
+        this.selectedShapes = new Set<Shape>()
         this.commandManager = commandManager
         this.shapeManager = shapeManager
     }
 
     singleSelect(shape: Shape) {
         this.clear()
-        if (!this.selectedShape.has(shape)) {
-            this.selectedShape.add(shape)
+        if (!this.selectedShapes.has(shape)) {
+            this.selectedShapes.add(shape)
             shape.select()
         }
     }
@@ -36,31 +38,31 @@ export class SelectionManager {
     }
 
     unselect(shape: Shape) {
-        if (this.selectedShape.has(shape)) {
-            this.selectedShape.delete(shape)
+        if (this.selectedShapes.has(shape)) {
+            this.selectedShapes.delete(shape)
             shape.unselect()
         }
     }
 
     toggle(shape: Shape) {
-        if (this.selectedShape.has(shape)) {
-            this.selectedShape.delete(shape)
+        if (this.selectedShapes.has(shape)) {
+            this.selectedShapes.delete(shape)
             shape.unselect()
         } else {
-            this.selectedShape.add(shape)
+            this.selectedShapes.add(shape)
             shape.select()
         }
     }
 
     clear() {
-        this.selectedShape.forEach((shape) => {
+        this.selectedShapes.forEach((shape) => {
             shape.unselect()
         })
-        this.selectedShape.clear()
+        this.selectedShapes.clear()
     }
 
     has(shape: Shape) {
-        return this.selectedShape.has(shape)
+        return this.selectedShapes.has(shape)
     }
 
     beginMove() {
@@ -71,7 +73,7 @@ export class SelectionManager {
     move(offsetX: number, offsetY: number) {
         if (!offsetX && !offsetY) return;
         const commands: Command[] = [];
-        this.selectedShape.forEach((shape) => {
+        this.selectedShapes.forEach((shape) => {
             commands.push(new MoveCommand(shape, offsetX, offsetY));
         });
         this.commandManager.execute(commands, false);
@@ -82,7 +84,7 @@ export class SelectionManager {
     stopMove() {
         if (!this.totalOffsetX && !this.totalOffsetY) return;
         const commands: Command[] = [];
-        this.selectedShape.forEach((shape) => {
+        this.selectedShapes.forEach((shape) => {
             commands.push(new MoveCommand(shape, this.totalOffsetX, this.totalOffsetY));
         });
         this.commandManager.push(commands);
@@ -91,15 +93,21 @@ export class SelectionManager {
     }
 
     singleShape() {
-        return this.selectedShape.size <= 1
+        return this.selectedShapes.size <= 1
     }
 
     deleteShapes(){
-        const indexArr = this.shapeManager.indexDescArr(Array.from(this.selectedShape))
-        const commands:Command[] = []
+        const indexArr = this.shapeManager.indexDescArr(Array.from(this.selectedShapes)) //获取index数组（倒序），execute时从后往前删
         this.commandManager.execute(indexArr.map((index)=>{
             return new DelCommand(this.shapeManager,index,this.shapeManager.getShape(index))
         }),true)
-
+    }
+    copy(){
+        this.shapeManager.copy(Array.from(this.selectedShapes).map((shape)=>{
+            return deepCopyObject(shape)
+        }))
+    }
+    paste(){
+        this.commandManager.execute([new PasteCommand(this.shapeManager)],true)
     }
 }

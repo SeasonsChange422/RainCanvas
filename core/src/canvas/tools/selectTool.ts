@@ -130,10 +130,18 @@ export const SelectTool: Tool = {
             return;
         }
         if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "y") {
-            (canvas.commandManager as any).redo?.();
+            canvas.commandManager.redo();
             return;
         }
 
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "c") {
+            canvas.selectionManager.copy()
+            return;
+        }
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "v") {
+            canvas.selectionManager.paste()
+            return;
+        }
         // 方向键微移
         let dx = 0, dy = 0;
         switch (e.key) {

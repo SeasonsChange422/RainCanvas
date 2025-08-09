@@ -30,6 +30,8 @@ export function deepCopyObject(obj,map=new WeakMap()){
             map.set(obj, clone);
             obj.forEach((item, i) => clone[i] = deepCopyObject(item, map));
             return clone;
+        case 'CanvasRenderingContext2D':
+            return obj
         default:
             clone = Object.create(Object.getPrototypeOf(obj));
             map.set(obj, clone);

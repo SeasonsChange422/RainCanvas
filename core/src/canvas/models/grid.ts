@@ -1,4 +1,4 @@
-import {OriginPoint} from "../types/common";
+import {OriginPoint} from "../core/common";
 import {BORDER_COLOR1, BORDER_COLOR2, GRID_GAP} from "../constpool/grid";
 import {CanvasElement} from "./canvasElement";
 

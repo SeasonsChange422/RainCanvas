@@ -1,6 +1,6 @@
 import {CanvasElement} from "./canvasElement";
-import {OriginPoint, RelativePoint} from "../types/common";
-import {RectBorder, ShapeOptions, ShapePoint} from "../types/shape";
+import {OriginPoint, RelativePoint} from "../core/common";
+import {RectBorder, ShapeOptions, ShapePoint} from "../core/shape";
 import {BORDER_COLOR} from "../constpool/shape";
 import {getRectBorder} from "../utils/shapeUtil";
 

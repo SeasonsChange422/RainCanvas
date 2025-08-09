@@ -12,7 +12,7 @@ import {ShapeManager} from "../core/shapeManager";
 
 export class Canvas {
     public el
-    public ctx
+    public ctx:CanvasRenderingContext2D
     public width = 300
     public height = 150
     public scale = 1
@@ -63,12 +63,9 @@ export class Canvas {
         this.width = options.width
         this.height = options.height
         this.grid = new Grid(this.ctx)
-        this.ctx._height = this.height
-        this.ctx._width = this.width
         this.selectArea = null
         this.commandManager = new CommandManager()
         this.shapeManager = new ShapeManager(this.shapes)
-        this.toolManager = new ToolManager(this.ctx)
         this.selectionManager = new SelectionManager(this.commandManager,this.shapeManager)
 
         this.resize(this.height, this.width)
@@ -107,12 +104,7 @@ export class Canvas {
         document.removeEventListener("keyup", this.toolManager.handleKeyUp as any);
     }
     findShapeAt(pos:RelativePoint) {
-        for (let i = this.shapes.length - 1; i >= 0; i--) {
-            if (this.shapes[i].isPointInside(pos,this.originPoint,this.scale)) {
-                return this.shapes[i];
-            }
-        }
-        return null;
+        return this.shapeManager.findShapeAt(pos,this.originPoint,this.scale)
     }
     // invalidate() { this.dirty = true; if (this.rafId == null) this.rafId = requestAnimationFrame(() => this.draw()); }
 
@@ -123,7 +115,7 @@ export class Canvas {
         const w = this.el.width, h = this.el.height;
         this.ctx.clearRect(0, 0, w, h);
         this.grid.draw(this.originPoint, this.scale);
-        this.shapes.forEach(shape => shape.draw(this.originPoint, this.scale));
+        this.shapeManager.draw(this.originPoint,this.scale)
         this.selectArea && this.selectArea.draw(this.originPoint, this.scale);
         requestAnimationFrame(() => this.draw(loop))
     }

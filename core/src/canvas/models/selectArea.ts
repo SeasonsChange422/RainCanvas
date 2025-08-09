@@ -1,6 +1,6 @@
 import {Shape} from "./shape";
-import {ShapeOptions, ShapePoint} from "../types/shape";
-import {OriginPoint, RelativePoint} from "../types/common";
+import {ShapeOptions, ShapePoint} from "../core/shape";
+import {OriginPoint, RelativePoint} from "../core/common";
 
 export class SelectArea extends Shape{
     private startPoint:ShapePoint

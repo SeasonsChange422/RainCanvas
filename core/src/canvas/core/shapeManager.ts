@@ -1,13 +1,17 @@
 import {Shape} from "../models/shape";
+import {OriginPoint, RelativePoint} from "./common";
 
 export class ShapeManager {
     private shapes:Shape[]
+    public copyShapes:Shape[]
     constructor(shapes:Shape[]) {
         this.shapes = shapes
+        this.copyShapes = []
     }
     deleteShapes(shapes:Shape[]){
-        this.shapes.filter((shape)=>{
-            return !shapes.includes(shape)
+        const idsToDelete = new Set(shapes.map((shape:Shape) => shape.id));
+        this.shapes = this.shapes.filter((shape)=>{
+            return !idsToDelete.has(shape.id)
         })
     }
     indexDescArr(shapes:Shape[]){
@@ -25,5 +29,28 @@ export class ShapeManager {
     }
     getShape(index:number){
         return this.shapes[index]
+    }
+    copy(shapes:Shape[]){
+        shapes.forEach((shape)=>{
+            shape.generalId()
+        })
+        this.copyShapes = shapes
+    }
+    paste(shapes:Shape[]){
+        shapes.forEach((shape)=>{
+            shape.unselect()
+        })
+        this.shapes.unshift(...shapes)
+    }
+    findShapeAt(pos:RelativePoint,origin:OriginPoint,scale:number) {
+        for (let i = this.shapes.length - 1; i >= 0; i--) {
+            if (this.shapes[i].isPointInside(pos,origin,scale)) {
+                return this.shapes[i];
+            }
+        }
+        return null;
+    }
+    draw(origin:OriginPoint,scale:number){
+        this.shapes.forEach(shape => shape.draw(origin, scale));
     }
 }

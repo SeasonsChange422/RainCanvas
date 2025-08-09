@@ -6,12 +6,14 @@ export class CommandManager{
     push(commands: Command[]) { this.history.push(commands); this.redoStack.length = 0; }
     execute(commands: Command[], push: boolean) {
         for (const c of commands) c.execute();
-        if (push) this.push(commands);
+        if (push) this.history.push(commands);
     }
     undo() {
-        const group = this.history.pop();
+        const group = this.history.pop()
         if (!group) return;
-        for (let i = group.length - 1; i >= 0; i--) group[i].undo();
+        group.forEach((task)=>{
+            task.undo()
+        })
         this.redoStack.push(group);
     }
     redo() {
