@@ -17,16 +17,24 @@ export class Canvas {
     public scale = 1
     public originPoint:OriginPoint = {x:20,y:20}
     public grid:Grid
-    private toolManager:ToolManager
-    private shapeManager:ShapeManager
+    public toolManager:ToolManager
+    public shapeManager:ShapeManager
     public selectionManager:SelectionManager
     public commandManager:CommandManager
     // private rafId: number | null = null;
     // private dirty = true;
 
     constructor(options:any) {
-        if (options.el && typeof options.el === 'string') {
-            this.el = document.querySelector(options.el);
+        if (options.el) {
+            if(typeof options.el === 'string'){
+                this.el = document.querySelector(options.el);
+            } else if(options.el instanceof HTMLElement){
+                this.el = options.el
+            }
+            if(!this.el){
+                throw ('canvas error')
+            }
+
         }
         if (this.el.getContext) {
             this.ctx = this.el.getContext('2d');

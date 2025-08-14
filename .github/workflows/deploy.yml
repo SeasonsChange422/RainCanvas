@@ -19,7 +19,8 @@ jobs:
 
       - name: Install and Build
         run: |
-          cd core
+          cd example/react
+
           npm install
           npm run build  # 执行 webpack 打包
 
@@ -27,5 +28,5 @@ jobs:
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./core/dist
+          publish_dir: ./example/react/dist
           publish_branch: gh-pages

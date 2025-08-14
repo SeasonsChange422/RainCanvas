@@ -22,4 +22,12 @@ export class CommandManager{
         for (const c of group) c.execute();
         this.history.push(group);
     }
+    
+    canUndo(): boolean {
+        return this.history.length > 0;
+    }
+    
+    canRedo(): boolean {
+        return this.redoStack.length > 0;
+    }
 }

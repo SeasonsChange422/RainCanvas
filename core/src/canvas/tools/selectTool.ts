@@ -20,7 +20,7 @@ type Mode = "idle" | "drag" | "pan" | "area";
 export const SelectTool: Tool = {
     id: "tool-select",
     cursor: "default",
-
+    //@ts-ignore
     onActivate(ctx:ToolContext) {
         // 可选：高亮工具栏
     },
