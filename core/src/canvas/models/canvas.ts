@@ -8,6 +8,8 @@ import {SelectTool} from "../tools/selectTool";
 import {PanTool} from "../tools/panTool";
 import {Tool} from "../core/tool";
 import {ShapeManager} from "../core/shapeManager";
+import { PointManager } from "../core/pointManager";
+import { HoverManager } from "../core/hoverManager";
 
 export class Canvas {
     public el
@@ -21,6 +23,8 @@ export class Canvas {
     public shapeManager:ShapeManager
     public selectionManager:SelectionManager
     public commandManager:CommandManager
+    public pointManager:PointManager
+    public hoverManager:HoverManager
     // private rafId: number | null = null;
     // private dirty = true;
 
@@ -75,13 +79,26 @@ export class Canvas {
             canvas: this,
             setTool: (id: string) => this.toolManager.setTool(id),
         });
+        this.pointManager = new PointManager()
+        this.pointManager.addPoints(this.shapeManager.getShapes().flatMap((shape)=>{
+            return shape.getPoints()
+        }))
         this.selectionManager = new SelectionManager(this.commandManager,this.shapeManager)
-
+        this.hoverManager = new HoverManager(this.pointManager)
         this.resize(this.height, this.width)
 
         this.draw()
         this.registerTools();
         this.registerToolEvents();
+    }
+    getShapeManager(){
+        return this.shapeManager
+    }
+    getPointManager(){
+        return this.pointManager
+    }
+    getHoverManager(){
+        return this.hoverManager
     }
     private registerTools() {
         this.toolManager.register(<Tool>SelectTool);

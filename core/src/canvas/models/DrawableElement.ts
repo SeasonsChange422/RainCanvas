@@ -1,9 +1,9 @@
 import {OriginPoint} from "../core/common";
 
-export abstract class CanvasElement{
+export abstract class DrawableElement{
     protected ctx
     public id:string = '-1'
-    constructor(ctx:any) {
+    constructor(ctx:CanvasRenderingContext2D) {
         this.ctx = ctx
         this.generalId()
     }

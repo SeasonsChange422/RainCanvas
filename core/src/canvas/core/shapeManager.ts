@@ -8,6 +8,15 @@ export class ShapeManager {
         this.shapes = shapes
         this.copyShapes = []
     }
+    addShape(shape:Shape){
+        this.shapes.push(shape)
+    }
+    addShapes(shapes:Shape[]){
+        this.shapes.push(...shapes)
+    }
+    getShapes(){
+        return this.shapes
+    }
     deleteShapes(shapes:Shape[]){
         const idsToDelete = new Set(shapes.map((shape:Shape) => shape.id));
         this.shapes = this.shapes.filter((shape)=>{

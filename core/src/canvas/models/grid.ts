@@ -1,10 +1,10 @@
 import {OriginPoint} from "../core/common";
 import {BORDER_COLOR1, BORDER_COLOR2, GRID_GAP} from "../constpool/grid";
-import {CanvasElement} from "./canvasElement";
+import {DrawableElement} from "./DrawableElement";
 
-export class Grid extends CanvasElement{
+export class Grid extends DrawableElement{
 
-    constructor(ctx:any) {
+    constructor(ctx:CanvasRenderingContext2D) {
         super(ctx);
     }
 

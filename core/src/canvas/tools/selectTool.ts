@@ -74,20 +74,24 @@ export const SelectTool: Tool = {
     onPointerMove(e:PointerEvent, ctx:ToolContext) {
         const canvas = ctx.canvas;
         const mode: Mode = (canvas as any)._mode || "idle";
-        if (mode === "drag") {
+        let relativePos = { x: e.offsetX, y: e.offsetY }
+        if (mode === "idle") {
+            canvas.getHoverManager().setHover(relativePos,canvas.originPoint,canvas.scale)
+        }
+        else if (mode === "drag") {
             const last = (canvas as any)._lastPt;
             const dx = (e.offsetX - last.x) / canvas.scale;
             const dy = (e.offsetY - last.y) / canvas.scale;
             canvas.selectionManager.move(dx, dy);
-            (canvas as any)._lastPt = { x: e.offsetX, y: e.offsetY };
+            (canvas as any)._lastPt = relativePos;
         } else if (mode === "pan") {
             const last = (canvas as any)._lastPt;
             canvas.originPoint.x += e.offsetX - last.x;
             canvas.originPoint.y += e.offsetY - last.y;
-            (canvas as any)._lastPt = { x: e.offsetX, y: e.offsetY };
+            (canvas as any)._lastPt = relativePos;
         } else if (mode === "area") {
-            canvas.selectionManager.selectedArea?.setEndPoint({ x: e.offsetX, y: e.offsetY });
-        }
+            canvas.selectionManager.selectedArea?.setEndPoint(relativePos);
+        } 
     },
 
     onPointerUp(e:PointerEvent, ctx:ToolContext) {
