@@ -11,7 +11,7 @@ const RainCanvas: React.FC<RainCanvasProps> = ({
   width = 1920,
   height = 1080
 }) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const canvasRef = useRef<HTMLDrawableElement>(null);
   const canvasInstanceRef = useRef<Canvas | null>(null);
   const [currentTool, setCurrentTool] = useState('tool-select');
   //@ts-ignore

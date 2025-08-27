@@ -1,28 +1,35 @@
-import {CanvasElement} from "./canvasElement";
+import {DrawableElement} from "./DrawableElement";
 import {OriginPoint, RelativePoint} from "../core/common";
 import {RectBorder, ShapeOptions, ShapePoint} from "../core/shape";
 import {BORDER_COLOR} from "../constpool/shape";
 import {getRectBorder} from "../utils/shapeUtil";
+import { Point } from "./point";
 
-export class Shape extends CanvasElement{
-    protected points:ShapePoint[]
+export class Shape extends DrawableElement{
+    protected shapePoints:ShapePoint[]
+    protected points:Point[]
     protected isClose:boolean
     protected isFill:boolean
     protected fillColor:string
     protected strokeColor:string
     protected isSelected:boolean = false
-    private index = 0
-    constructor(ctx:any,points:ShapePoint[],options:ShapeOptions) {
+    constructor(ctx:CanvasRenderingContext2D,shapePoints:ShapePoint[],options:ShapeOptions) {
         super(ctx);
-        this.points = points
+        this.shapePoints = shapePoints
+        this.points = shapePoints.map((point)=>{
+            return new Point(ctx,point.x,point.y)
+        })
         this.isClose = options.isClose || false
         this.isFill = options.isFill || false
         this.fillColor = options.fillColor || 'rgb(255,255,255)'
         this.strokeColor = options.strokeColor || 'rgb(0,0,0)'
     }
+    getPoints(){
+        return this.points
+    }
     isInArea(startPoint:RelativePoint,endPoint:RelativePoint,originPoint:OriginPoint,scale:number):boolean{
         let ret = true
-        this.points.map((point)=>{
+        this.shapePoints.map((point)=>{
             return {
                 x:originPoint.x + point.x * scale,
                 y:originPoint.y + point.y * scale
@@ -39,7 +46,7 @@ export class Shape extends CanvasElement{
     }
     isPointInside(testPoint: RelativePoint, originPoint: OriginPoint, scale: number): boolean {
         if (!this.isClose){
-            let rectBorder:RectBorder = getRectBorder(this.points)
+            let rectBorder:RectBorder = getRectBorder(this.shapePoints)
             if( originPoint.x + rectBorder.minX*scale<=testPoint.x&&
                 originPoint.x + rectBorder.maxX*scale>=testPoint.x&&
                 originPoint.y + rectBorder.minY*scale<=testPoint.y&&
@@ -48,15 +55,15 @@ export class Shape extends CanvasElement{
             }
             return false
         }
-        const transformedPoints = this.points.map(p => ({
+        const transformedshapePoints = this.shapePoints.map(p => ({
             x: originPoint.x + p.x * scale,
             y: originPoint.y + p.y * scale
         }));
         let inside = false;
-        const n = transformedPoints.length;
+        const n = transformedshapePoints.length;
         for (let i = 0, j = n - 1; i < n; j = i++) {
-            const pi = transformedPoints[i];
-            const pj = transformedPoints[j];
+            const pi = transformedshapePoints[i];
+            const pj = transformedshapePoints[j];
             // 检查点是否在顶点上
             if (pi.x === testPoint.x && pi.y === testPoint.y) {
                 return true;
@@ -81,7 +88,7 @@ export class Shape extends CanvasElement{
     }
 
     draw(originPoint: OriginPoint, scale: number) {
-        let points:ShapePoint[] = this.points.map((point)=> {
+        let shapePoints:ShapePoint[] = this.shapePoints.map((point)=> {
             return {
                     x: originPoint.x + point.x * scale,
                     y: originPoint.y + point.y * scale
@@ -91,7 +98,7 @@ export class Shape extends CanvasElement{
         this.ctx.beginPath()
         this.ctx.fillStyle = this.fillColor
         this.ctx.strokeStyle = this.isSelected&&this.isClose?BORDER_COLOR:this.strokeColor
-        points.forEach((point,index)=>{
+        shapePoints.forEach((point,index)=>{
             if(index===0){
                 this.ctx.moveTo(point.x,point.y)
             } else {
@@ -101,20 +108,29 @@ export class Shape extends CanvasElement{
         this.isClose&&this.ctx.closePath()
         this.isFill&&this.ctx.fill()
         this.ctx.stroke()
-        this.isSelected&&!this.isClose&&this.drawBorder(points)
+        this.isSelected&&!this.isClose&&this.drawBorder()
+        this.isSelected&&this.drawPoint(originPoint,scale) 
 
     }
-    drawBorder(points:ShapePoint[]){
-        this.index=(this.index++)%23
-        let rectBorder:RectBorder = getRectBorder(points)
+    drawBorder(){
+        let rectBorder:RectBorder = getRectBorder(this.shapePoints)
         this.ctx.strokeStyle = BORDER_COLOR
         this.ctx.strokeRect(rectBorder.minX, rectBorder.minY, rectBorder.maxX-rectBorder.minX, rectBorder.maxY-rectBorder.minY)
     }
+    drawPoint(originPoint:OriginPoint,scale:number){
+        this.points.forEach((point)=>{
+            point.draw(originPoint,scale)
+        })
+    }
+
     move(offsetX:number,offsetY:number){
-        this.points = this.points.map((point)=>{
+        this.shapePoints = this.shapePoints.map((point)=>{
             point.x += offsetX
             point.y += offsetY
             return point
+        })
+        this.points.forEach((point)=>{
+            point.move(offsetX,offsetY)
         })
     }
 }

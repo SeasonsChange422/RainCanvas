@@ -33,7 +33,7 @@ export class SelectionManager {
     }
 
     selectArea(startPoint: RelativePoint, endPoint: RelativePoint, originPoint: OriginPoint, scale: number) {
-        this.shapeManager.shapes.forEach((shape) => {
+        this.shapeManager.getShapes().forEach((shape) => {
             if (shape.isInArea(startPoint, endPoint, originPoint, scale)) {
                 this.toggle(shape)
             }
